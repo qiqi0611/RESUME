@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7天鲜啤 · 全案策划 — 吴琦</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        surface: '#0f1117',
+        accent: '#6366f1',
+        'accent-light': '#a5b4fc',
+        'amber': '#E0A33E',
+        'amber-deep': '#B87410',
+        'text-primary': '#f0f0f5',
+        'text-secondary': '#9398a5',
+      }
+    }
+  }
+}
+</script>
+<style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;margin:0;overflow-x:hidden}
+
+  /* ── Fluid Canvas ── */
+  #fluid-canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
+  .content-layer{position:relative;z-index:10}
+
+  /* ── Animations ── */
+  .fade-up{opacity:0;transform:translateY(30px);transition:opacity 0.7s ease,transform 0.7s ease}
+  .fade-up.visible{opacity:1;transform:translateY(0)}
+  .fade-in{opacity:0;transition:opacity 0.6s ease}
+  .fade-in.visible{opacity:1}
+
+  /* ── Glass Card ── */
+  .glass{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(12px);border-radius:16px;padding:24px;transition:border-color 0.3s}
+  .glass:hover{border-color:rgba(99,102,241,0.25)}
+
+  /* ── Gradient Card ── */
+  .grad-card{border-radius:20px;padding:28px 32px;border:1px solid rgba(99,102,241,0.15)}
+
+  /* ── KPI ── */
+  .kpi-box{background:rgba(255,255,255,0.045);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px;text-align:center;transition:transform 0.3s,border-color 0.3s}
+  .kpi-box:hover{transform:translateY(-2px);border-color:rgba(99,102,241,0.3)}
+
+  /* ── Nav ── */
+  nav{position:sticky;top:0;z-index:50;background:rgba(15,17,23,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:4px;overflow-x:auto;font-size:13px;padding:10px 16px}
+  nav a{white-space:nowrap;text-decoration:none;color:#9398a5;padding:6px 12px;border-radius:8px;transition:all 0.2s}
+  nav a:hover,nav a.active{background:rgba(99,102,241,0.15);color:#a5b4fc}
+
+  /* ── Bar Chart ── */
+  .bar-row{display:flex;align-items:center;gap:10px;margin:8px 0}
+  .bar-label{width:80px;font-size:13px;color:#9398a5;flex-shrink:0}
+  .bar-track{flex:1;background:rgba(255,255,255,0.06);border-radius:6px;height:26px;position:relative;overflow:hidden}
+  .bar-fill{height:100%;border-radius:6px}
+  .bar-val{width:80px;font-size:12px;font-weight:700;color:#c8ccd4;text-align:right;flex-shrink:0}
+  .b-indigo{background:linear-gradient(90deg,#6366f1,#818cf8)}
+  .b-amber{background:linear-gradient(90deg,#E0A33E,#f0c060)}
+  .b-red{background:linear-gradient(90deg,#ef4444,#f87171)}
+  .b-green{background:linear-gradient(90deg,#3E8E52,#4ade80)}
+  .b-gray{background:linear-gradient(90deg,#6b7280,#9ca3af)}
+
+  /* ── Tables ── */
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+  th,td{border:1px solid rgba(255,255,255,0.08);padding:8px 12px;text-align:center}
+  th{background:rgba(99,102,241,0.1);color:#a5b4fc;font-weight:600}
+  td{color:#c8ccd4}
+  td.hl{background:rgba(62,142,82,0.12);font-weight:700;color:#4ade80}
+
+  /* ── Chip ── */
+  .chip{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;font-size:14px;color:#c8ccd4}
+
+  /* ── Result Box ── */
+  .res{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 13px;flex:1;min-width:140px}
+  .res b{display:block;font-size:20px;color:#a5b4fc}
+
+  /* ── Misc ── */
+  .note{background:rgba(224,163,62,0.08);border-left:3px solid #E0A33E;padding:10px 14px;border-radius:8px;font-size:13px;color:#d4b870;margin-top:8px}
+  .mut{color:#9398a5;font-size:12px}
+  .flag{font-size:11px;background:rgba(62,142,82,0.12);color:#4ade80;border:1px solid rgba(62,142,82,0.3);padding:2px 8px;border-radius:6px;margin-left:6px}
+  .pill{display:inline-block;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:999px;padding:3px 10px;font-size:12px;color:#a5b4fc;margin:3px 4px 3px 0}
+  .sec-num{width:36px;height:36px;flex-shrink:0;border-radius:10px;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px}
+
+  @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .animate-gradient{background-size:200% 200%;animation:gradientShift 6s ease infinite}
+</style>
+</head>
+<body class="bg-surface text-text-primary">
+
+<!-- ── Fluid Background ── -->
+<canvas id="fluid-canvas"></canvas>
+
+<!-- ── Content ── -->
+<div class="content-layer">
+
+  <!-- ── Hero ── -->
+  <section class="relative min-h-[70vh] flex items-center justify-center px-6 pt-24 pb-16 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent pointer-events-none"></div>
+    <div class="relative z-10 max-w-4xl mx-auto text-center fade-in" id="hero-content">
+      <p class="text-accent-light/80 text-xs font-medium tracking-[0.25em] uppercase mb-4">CFLP · Alcoholic & Water Supply Chain Division</p>
+      <p class="text-amber/80 text-xs mb-6">标杆研究切入：青岛啤酒「极速保鲜链」</p>
+      <h1 class="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight mb-6">
+        <span class="bg-gradient-to-r from-accent-light to-white bg-clip-text text-transparent animate-gradient">7天</span>
+        <span class="text-amber">鲜啤</span>
+        <span class="text-white"> · 全案策划</span>
+      </h1>
+      <p class="text-text-secondary/80 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+        以青岛啤酒原浆「极速保鲜链」为标杆切入，附建模实证：铁路冷链 vs 公路/航空对比、EOQ+重心法选址、单城财务敏感性。
+      </p>
+      <div class="flex flex-wrap justify-center gap-2 mt-6">
+        <span class="px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-xs text-accent-light">视角①：中物联酒类与水饮供应链分会</span>
+        <span class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-text-secondary">视角②：交通/铁路物流工程</span>
+        <span class="px-3 py-1.5 rounded-full bg-amber/10 border border-amber/20 text-xs text-amber">含建模测算 v3</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── KPI Bar ── -->
+  <div class="max-w-6xl mx-auto px-6 pb-8">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="kpi-box fade-up"><div class="text-xl sm:text-2xl font-black text-accent-light">312亿</div><div class="text-[10px] sm:text-xs text-text-secondary mt-1">2025 鲜啤市场</div></div>
+      <div class="kpi-box fade-up" style="transition-delay:0.05s"><div class="text-xl sm:text-2xl font-black text-accent-light">1300→1600亿</div><div class="text-[10px] sm:text-xs text-text-secondary mt-1">精酿规模(25→26E)</div></div>
+      <div class="kpi-box fade-up" style="transition-delay:0.1s"><div class="text-xl sm:text-2xl font-black text-amber">省55.6%</div><div class="text-[10px] sm:text-xs text-text-secondary mt-1">铁路 vs 公路成本</div></div>
+      <div class="kpi-box fade-up" style="transition-delay:0.15s"><div class="text-xl sm:text-2xl font-black text-green-400">降82.3%</div><div class="text-[10px] sm:text-xs text-text-secondary mt-1">铁路 vs 公路碳排</div></div>
+      <div class="kpi-box fade-up" style="transition-delay:0.2s"><div class="text-xl sm:text-2xl font-black text-accent-light">36.3%</div><div class="text-[10px] sm:text-xs text-text-secondary mt-1">损耗3%毛利率</div></div>
+    </div>
+  </div>
+
+  <!-- ── Nav ── -->
+  <nav id="nav">
+    <a href="#s1" class="active">① 背景</a><a href="#s2">② 青啤切入</a><a href="#s3">③ 产品</a>
+    <a href="#s4">④ 品牌</a><a href="#s5">⑤ 供应链</a><a href="#s6">⑥ 渠道</a>
+    <a href="#s7">⑦ 营销</a><a href="#s8">⑧ 财务</a><a href="#s9">⑨ 风险</a>
+    <a href="#s10">⑩ 执行</a><a href="#s11">⑪ 建模实证</a>
+  </nav>
+
+  <!-- ── Main Content ── -->
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <!-- ═══════ 1. 背景 ═══════ -->
+    <section id="s1" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">1</div>
+        <h2 class="text-2xl font-bold text-white">项目背景与机会</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Context</span>
+      </div>
+
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>市场趋势（数据支撑）</h3>
+        <div class="flex flex-wrap gap-4 text-sm text-text-secondary/80">
+          <span><b class="text-accent-light">312亿</b> 2025鲜啤市场，增速12%–15%</span>
+          <span><b class="text-accent-light">1300亿</b> 2024精酿，2026E达1600亿</span>
+          <span>精酿2020→2024：<b class="text-accent-light">200→800亿</b></span>
+          <span>2024啤酒产量<b class="text-accent-light">3521.3万千升</b></span>
+        </div>
+        <ul class="mt-3 text-sm text-text-secondary/70 space-y-1"><li>消费从"喝得多"转向"喝得鲜、喝得特别"</li><li>即饮与即时零售基础设施成熟，短保履约可行</li><li>蜜雪2.97亿控股福鹿家（门店1300→3100），赛道资本热</li></ul>
+      </div>
+
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>核心痛点与机会</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="chip"><b class="text-accent-light">痛点</b>：长保"失鲜"；传统冷链损耗8%–15%</div>
+          <div class="chip"><b class="text-accent-light">痛点</b>：平价便携鲜啤空白——酒吧30–50元/杯</div>
+          <div class="chip"><b class="text-amber">机会</b>：用"7天锁鲜"建可感知的新鲜心智</div>
+          <div class="chip"><b class="text-amber">机会</b>：以供应链密度换覆盖，形成壁垒</div>
+        </div>
+      </div>
+
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>SWOT 速览</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="chip"><b class="text-green-400">优势 S</b>：新鲜心智强、毛利大、差异化明显</div>
+          <div class="chip"><b class="text-red-400">劣势 W</b>：保质期短、供应链要求高、初期产能受限</div>
+          <div class="chip"><b class="text-green-400">机会 O</b>：精酿上行、即时零售、平价鲜啤空白</div>
+          <div class="chip"><b class="text-red-400">威胁 T</b>：巨头/跨界入局、冷链成本、季节波动</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 2. 青啤切入 ═══════ -->
+    <section id="s2" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">2</div>
+        <h2 class="text-2xl font-bold text-white">标杆切入：青岛啤酒「极速保鲜链」</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Benchmark</span>
+      </div>
+
+      <div class="grad-card bg-gradient-to-br from-accent/8 to-accent/3 border-accent/15 fade-up">
+        <h3 class="text-lg font-bold text-accent-light mb-3">为什么以青岛啤酒为切入？ <span class="text-text-secondary/50 text-xs font-normal ml-2">人民日报 2026-02-13 第18版</span></h3>
+        <p class="text-sm text-text-secondary/70 leading-relaxed">青岛啤酒原浆<b class="text-white">保质期仅7天</b>，新鲜下线后<b class="text-white">搭乘飞机、高铁运往全国</b>，<b class="text-white">30多个城市下单半小时尝鲜</b>——龙头已验证"7天短保+公铁联运极速冷链"可行。本方案在其肩膀上做更本地、更轻、更绿的差异化复制。</p>
+        <div class="my-4 px-4 py-3 rounded-lg bg-white/[0.03] border border-white/5 text-sm italic text-text-secondary/60">"新鲜下线的青啤原浆搭乘飞机、高铁运往全国各地…依托'智能大脑'搭建一条与时间赛跑的极速保鲜链。"</div>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm mt-3">
+          <div class="chip"><b class="text-accent-light">需求预测</b>：工业大模型提前30天生成预测</div>
+          <div class="chip"><b class="text-accent-light">柔性生产</b>：500+品类混线，转换-70%、交付-50%、效率+60%</div>
+          <div class="chip"><b class="text-accent-light">智能仓储</b>：34米立体库，日均20余万箱</div>
+          <div class="chip"><b class="text-accent-light">绿色低碳</b>：碳排放密度3年降40%</div>
+        </div>
+      </div>
+
+      <div class="glass mt-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-amber rotate-45"></span>可借鉴 vs 我们的差异化</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="chip"><b class="text-accent-light">借鉴青啤</b>：高铁/航空极速冷链、AI智能大脑、一盘货</div>
+          <div class="chip"><b class="text-accent-light">借鉴蜜雪</b>：双基地+全国仓，生产-15~20%、损耗&lt;3%</div>
+          <div class="chip"><b class="text-amber">我们差异</b>：更短保、更本地（区域微酿）、更轻资产</div>
+          <div class="chip"><b class="text-amber">我们差异</b>：以<b class="text-amber">铁路冷链集装箱</b>做干线，强化绿色与成本</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 3. 产品 ═══════ -->
+    <section id="s3" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">3</div><h2 class="text-2xl font-bold text-white">产品策划</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Product</span>
+      </div>
+
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>产品定位</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>核心主张："从酒厂到你，不超过7天"——保质期即卖点（对标青啤原浆）</li><li>差异化锚点：未过度杀菌/短保原浆、风味保留度更高</li></ul>
+      </div>
+
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>产品矩阵</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="chip"><b class="text-accent-light">经典原浆</b>：大众款，麦香清爽，引流</div>
+          <div class="chip"><b class="text-accent-light">精酿系列</b>：IPA/小麦白/世涛，溢价</div>
+          <div class="chip"><b class="text-accent-light">果味鲜啤</b>：桃/荔枝，女性与年轻客群</div>
+          <div class="chip"><b class="text-accent-light">季节限定</b>：节日/节气款，制造稀缺</div>
+        </div>
+      </div>
+
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>包装、锁鲜与定价带</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1">
+          <li>规格：1L/2L 锁鲜桶、330ml 听装、扎啤桶（B端）</li>
+          <li>印"出厂日期+最佳饮用倒计时"+溯源码</li>
+          <li>定价参考：福鹿家5.9–15元/斤（客单17元）；酒吧30–50元/杯 → 我们卡位 <b class="text-amber">8–20元/斤</b></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ═══════ 4. 品牌 ═══════ -->
+    <section id="s4" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">4</div><h2 class="text-2xl font-bold text-white">品牌策划</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Brand</span>
+      </div>
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>定位与 Slogan</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>"7天，是新鲜的上限" / "鲜，不等人" / "本地鲜酿，当日可达"</li><li>人格：年轻、真实、有点酷的本地酿造伙伴</li></ul>
+      </div>
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>视觉与故事</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1">
+          <li>色彩体系：<span class="pill">中物联蓝</span><span class="pill">青啤红</span><span class="pill">麦金</span></li>
+          <li>品牌故事：本地微酿+当日冷链，把"新鲜"做成可承诺体验</li>
+          <li>ESG：低损耗、不浪费、本地就业</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ═══════ 5. 供应链 ═══════ -->
+    <section id="s5" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">5</div><h2 class="text-2xl font-bold text-white">供应链策划<span class="text-accent-light text-sm ml-2">（核心）</span></h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Supply Chain</span>
+      </div>
+
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>5.1 产能布局：双基地+全国仓</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>区域中央微酿厂+城市卫星厂/前店后厂，把半径压到最短</li><li>"鲜"的边界=冷链时效边界，布局先于营销</li></ul>
+      </div>
+
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>5.2 冷链物流网络（分层）</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="chip"><b class="text-accent-light">干线</b>：城市间公铁联运——高铁/铁路冷链集装箱</div>
+          <div class="chip"><b class="text-accent-light">城配</b>：新能源冷链车，日配/隔日配</div>
+          <div class="chip"><b class="text-accent-light">末端</b>：前置微仓+即时配送（小时达）</div>
+          <div class="chip"><b class="text-accent-light">温控</b>：全程0–4℃，断链告警</div>
+        </div>
+      </div>
+
+      <!-- 5.3 铁路冷链 -->
+      <div class="glass mb-4 fade-up" style="border-left:3px solid #E0A33E">
+        <h3 class="text-base font-semibold text-amber mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-amber rotate-45"></span>5.3 专题｜铁路冷链干线调拨<span class="flag">铁路物流视角</span></h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1 mb-4">
+          <li><b class="text-white">现实锚点</b>：青岛啤酒原浆已"搭乘飞机、高铁运往全国"</li>
+          <li><b class="text-white">主张</b>：城市间干线以<b class="text-amber">铁路冷链集装箱</b>替代部分公路/航空</li>
+        </ul>
+        <div class="p-5 rounded-xl bg-accent/5 border border-accent/15">
+          <div class="text-sm font-bold text-accent-light mb-1">建模实证 · 干线调拨方式对比（800km，20吨/批次）</div>
+          <div class="mut mb-4">运价(元/吨公里)：公路0.45 / 铁路0.20 / 航空2.00；排放(kgCO₂/吨公里)：0.062 / 0.011 / 0.55</div>
+          <div class="bar-row"><span class="bar-label">公路成本</span><div class="bar-track"><div class="bar-fill b-red" style="width:100%"></div></div><span class="bar-val">7,200元</span></div>
+          <div class="bar-row"><span class="bar-label">铁路成本</span><div class="bar-track"><div class="bar-fill b-indigo" style="width:44.4%"></div></div><span class="bar-val">3,200元</span></div>
+          <div class="bar-row"><span class="bar-label">航空成本</span><div class="bar-track"><div class="bar-fill b-gray" style="width:100%"></div></div><span class="bar-val">32,000元</span></div>
+          <div class="bar-row"><span class="bar-label">公路碳排</span><div class="bar-track"><div class="bar-fill b-red" style="width:11.3%"></div></div><span class="bar-val">992kg</span></div>
+          <div class="bar-row"><span class="bar-label">铁路碳排</span><div class="bar-track"><div class="bar-fill b-indigo" style="width:2%"></div></div><span class="bar-val">176kg</span></div>
+          <div class="bar-row"><span class="bar-label">航空碳排</span><div class="bar-track"><div class="bar-fill b-gray" style="width:100%"></div></div><span class="bar-val">8,800kg</span></div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+            <div class="res"><b class="text-green-400">省55.6%</b><span class="text-[11px] text-text-secondary/60">铁路vs公路成本</span></div>
+            <div class="res"><b class="text-green-400">降82.3%</b><span class="text-[11px] text-text-secondary/60">铁路vs公路碳排</span></div>
+            <div class="res"><b class="text-red-400">高10×</b><span class="text-[11px] text-text-secondary/60">航空vs铁路成本</span></div>
+            <div class="res"><b class="text-red-400">高50×</b><span class="text-[11px] text-text-secondary/60">航空vs铁路碳排</span></div>
+          </div>
+          <div class="note mt-3">铁路冷链在中长距离干线全面占优；航空仅适用于极时效场景且不经济。时效均落在7天窗口内。月600吨总成本：公路21.6万、铁路9.6万、航空96万。</div>
+        </div>
+      </div>
+
+      <!-- 5.4 EOQ -->
+      <div class="glass mb-4 fade-up" style="border-left:3px solid #E0A33E">
+        <h3 class="text-base font-semibold text-amber mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-amber rotate-45"></span>5.4 专题｜库存—运输成本权衡（EOQ+选址）<span class="flag">工程视角</span></h3>
+        <div class="p-5 rounded-xl bg-accent/5 border border-accent/15">
+          <div class="text-sm font-bold text-accent-light mb-1">建模实证 · EOQ 与重心法选址</div>
+          <div class="mut mb-3">单仓年需求3600吨，单次补货500元，持有率20%（H=4800元/吨·年）；需求点A(2,8,w500)/B(10,3,w300)/C(6,12,w200)</div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div class="res"><b class="text-accent-light">27.4吨</b><span class="text-[11px] text-text-secondary/60">EOQ经济订货量/次</span></div>
+            <div class="res"><b class="text-accent-light">每2.8天</b><span class="text-[11px] text-text-secondary/60">补货节奏（131次/年）</span></div>
+            <div class="res"><b class="text-accent-light">13.7吨</b><span class="text-[11px] text-text-secondary/60">平均库存</span></div>
+            <div class="res"><b class="text-amber">(3.20,10.08)</b><span class="text-[11px] text-text-secondary/60">最优配送中心坐标</span></div>
+          </div>
+          <svg viewBox="0 0 360 250" style="width:100%;max-width:420px;margin-top:8px">
+            <rect x="30" y="20" width="300" height="220" fill="rgba(99,102,241,0.03)" stroke="rgba(99,102,241,0.15)" rx="4"/>
+            <line x1="30" y1="240" x2="330" y2="240" stroke="rgba(255,255,255,0.08)"/>
+            <line x1="30" y1="20" x2="30" y2="240" stroke="rgba(255,255,255,0.08)"/>
+            <circle cx="80" cy="110" r="7" fill="#ef4444"/><text x="80" y="98" font-size="11" fill="#fca5a5">A(2,8)</text>
+            <circle cx="280" cy="210" r="7" fill="#818cf8"/><text x="280" y="226" font-size="11" fill="#a5b4fc">B(10,3)</text>
+            <circle cx="180" cy="30" r="7" fill="#E0A33E"/><text x="180" y="22" font-size="11" fill="#f0c060">C(6,12)</text>
+            <circle cx="110" cy="68" r="10" fill="#4ade80" stroke="#fff" stroke-width="2"/><text x="110" y="56" font-size="11" font-weight="700" fill="#4ade80">最优DC</text>
+            <line x1="80" y1="110" x2="110" y2="68" stroke="rgba(255,255,255,0.1)"/>
+            <line x1="280" y1="210" x2="110" y2="68" stroke="rgba(255,255,255,0.1)"/>
+            <line x1="180" y1="30" x2="110" y2="68" stroke="rgba(255,255,255,0.1)"/>
+          </svg>
+          <div class="mut text-center mt-2">绿点为重心法收敛出的最优配送中心，靠近高权重A商圈</div>
+        </div>
+      </div>
+
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>5.5 数字化中台（AI 智能大脑）</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>需求预测+智能补货+全链路溯源，对标青啤"智能大脑"</li><li>看板监控在途/库存/报损，临期T-2自动触发调拨/打折</li></ul>
+      </div>
+
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>5.6 损耗闭环<span class="flag">亮点</span></h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>传统8%–15%；标杆（蜜雪）压至<b class="text-green-400">3%以内</b>→我们目标<b class="text-green-400">＜3%</b></li><li>临期折扣→B端消纳→公益捐赠</li></ul>
+      </div>
+    </section>
+
+    <!-- ═══════ 6. 渠道 ═══════ -->
+    <section id="s6" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">6</div><h2 class="text-2xl font-bold text-white">渠道与履约</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Channel</span>
+      </div>
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>渠道结构</h3>
+        <div class="grid sm:grid-cols-3 gap-3 text-sm">
+          <div class="chip"><b class="text-accent-light">B端</b>：餐饮、精酿吧、商超冷柜</div>
+          <div class="chip"><b class="text-accent-light">C端</b>：即时零售、社区团购、订阅周配</div>
+          <div class="chip"><b class="text-accent-light">自有</b>：小程序直营+鲜啤打酒站（15㎡外带）</div>
+        </div>
+      </div>
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>履约体系</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>B端次日达、C端小时达/次日达</li><li>冷柜即终端：商超/社区冷柜自提降最后一公里成本</li></ul>
+      </div>
+    </section>
+
+    <!-- ═══════ 7. 营销 ═══════ -->
+    <section id="s7" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">7</div><h2 class="text-2xl font-bold text-white">营销策划</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Marketing</span>
+      </div>
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>上市节奏</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>预热：工厂开放日、鲜啤倒计时悬念</li><li>引爆：城市鲜啤节、KOL探厂溯源</li><li>持续：订阅制+私域复购</li></ul>
+      </div>
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>内容与活动</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>核心："这桶酒7天内的旅行"——溯源故事化</li><li>鲜啤节、打酒站打卡、UGC；会员/私域运营</li></ul>
+      </div>
+    </section>
+
+    <!-- ═══════ 8. 财务 ═══════ -->
+    <section id="s8" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">8</div><h2 class="text-2xl font-bold text-white">财务与测算</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Finance</span>
+      </div>
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>测算框架</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="chip"><b class="text-accent-light">成本结构</b>：原料+酿造+冷链(铁路/城配/末端)+包装+损耗</div>
+          <div class="chip"><b class="text-accent-light">标杆成本</b>：蜜雪单杯&lt;3元、生产-15~20%</div>
+          <div class="chip"><b class="text-accent-light">损耗基准</b>：传统8%–15%→目标&lt;3%</div>
+          <div class="chip"><b class="text-accent-light">定价带</b>：8–20元/斤，客单15–25元</div>
+        </div>
+      </div>
+
+      <div class="glass fade-up">
+        <h3 class="text-base font-semibold text-amber mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-amber rotate-45"></span>建模实证 · 单城财务敏感性（试点城）<span class="flag">建模实证</span></h3>
+        <div class="p-5 rounded-xl bg-accent/5 border border-accent/15">
+          <div class="mut mb-4">假设：年销量1000吨，均价28000元/吨（≈14元/斤）；单位成本原料8000+包装3000+冷链4000+其他2000=17000元/吨（不含损耗）</div>
+          <div class="bar-row"><span class="bar-label">损耗3%</span><div class="bar-track"><div class="bar-fill b-green" style="width:100%"></div></div><span class="bar-val">年毛利1016万</span></div>
+          <div class="bar-row"><span class="bar-label">损耗8%</span><div class="bar-track"><div class="bar-fill b-amber" style="width:86.2%"></div></div><span class="bar-val">年毛利876万</span></div>
+          <div class="bar-row"><span class="bar-label">损耗15%</span><div class="bar-track"><div class="bar-fill b-red" style="width:66.9%"></div></div><span class="bar-val">年毛利680万</span></div>
+          <table class="mt-4">
+            <tr><th>损耗率</th><th>损耗元/吨</th><th>总成本元/吨</th><th>单位毛利</th><th>毛利率</th><th>年毛利</th></tr>
+            <tr><td>3%</td><td>840</td><td>17,840</td><td>10,160</td><td class="hl">36.3%</td><td class="hl">1,016万</td></tr>
+            <tr><td>8%</td><td>2,240</td><td>19,240</td><td>8,760</td><td>31.3%</td><td>876万</td></tr>
+            <tr><td>15%</td><td>4,200</td><td>21,200</td><td>6,800</td><td>24.3%</td><td>680万</td></tr>
+          </table>
+          <div class="note mt-3">损耗率每上升5个百分点，毛利率约降5个百分点、年毛利减少约130万——"供应链控损"是利润生命线。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 9. 风险 ═══════ -->
+    <section id="s9" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">9</div><h2 class="text-2xl font-bold text-white">风险与保障</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Risk</span>
+      </div>
+      <div class="grad-card bg-gradient-to-br from-accent/8 to-accent/3 border-accent/15 mb-4 fade-up">
+        <h3 class="text-sm font-bold text-accent-light mb-2">核心判断：供应链半径与全程冷链是短保鲜啤的竞争力底座</h3>
+        <p class="text-sm text-text-secondary/80 leading-relaxed">7天短保原浆的价值，必须建立在<b class="text-white">半径可控+冷链不断链</b>之上。青岛啤酒已用"高铁/航空极速保鲜链"验证：在合理半径内，7天短保可做到全国30+城市半小时尝鲜。我们的打法是用<b class="text-amber">铁路冷链+本地微酿</b>把半径压得更短、更绿、更稳。</p>
+      </div>
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>关键风险</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="chip"><b class="text-red-400">报损</b>：预测偏差→过期（传统8–15%）</div>
+          <div class="chip"><b class="text-red-400">断链</b>：冷链失效，风味尽毁</div>
+          <div class="chip"><b class="text-red-400">资质</b>：酒类许可、食安合规</div>
+          <div class="chip"><b class="text-red-400">季节</b>：冬季需求回落，无热饮缓冲</div>
+        </div>
+      </div>
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>保障举措</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>应急调拨+渠道兜底+损耗保险；严守0–4℃与溯源留证</li><li>弹性产能+合规前置+未成年销售红线管控</li><li>以铁路冷链+本地微酿压缩半径，从源头控制跨区域时效风险</li></ul>
+      </div>
+    </section>
+
+    <!-- ═══════ 10. 执行 ═══════ -->
+    <section id="s10" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">10</div><h2 class="text-2xl font-bold text-white">执行路线图</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Roadmap</span>
+      </div>
+      <div class="glass mb-4 fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>三阶段推进</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-2">
+          <li><b class="text-accent-light">试点期（0–3月）</b>：1城1厂，跑通"酿造—铁路/冷链—渠道"闭环，验证损耗＜3%</li>
+          <li><b class="text-accent-light">扩张期（3–12月）</b>：复制3–5城，建卫星厂+前置仓，上线AI中台与EOQ补货</li>
+          <li><b class="text-accent-light">复制期（12月+）</b>：区域密度经济成型，开放打酒站加盟</li>
+        </ul>
+      </div>
+      <div class="glass fade-up"><h3 class="text-base font-semibold text-accent-light mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-accent rotate-45"></span>责任与里程碑</h3>
+        <ul class="text-sm text-text-secondary/70 space-y-1"><li>供应链组：工厂落地、铁路冷链干线开通（M1–M2）</li><li>品牌/营销组：VI、上市campaign（M2–M3）</li><li>数据组：中台v1、预测与EOQ模型上线（M3）</li></ul>
+      </div>
+    </section>
+
+    <!-- ═══════ 11. 建模实证 ═══════ -->
+    <section id="s11" class="mb-16">
+      <div class="flex items-center gap-3 mb-6 pb-3 border-b border-white/5 fade-up">
+        <div class="sec-num">11</div><h2 class="text-2xl font-bold text-white">建模实证附录</h2>
+        <span class="ml-auto text-[10px] tracking-widest text-text-secondary/50 uppercase">Modeling</span>
+      </div>
+
+      <!-- 模型一 -->
+      <div class="glass mb-4 fade-up">
+        <h3 class="text-base font-semibold text-amber mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-amber rotate-45"></span>模型一｜干线调拨方式对比<span class="flag">成本·时效·碳排放</span></h3>
+        <div class="p-5 rounded-xl bg-accent/5 border border-accent/15">
+          <div class="text-sm text-text-secondary/70 mb-4">场景：800km干线，单批次20吨</div>
+          <table>
+            <tr><th>方式</th><th>单批次成本</th><th>单批次碳排</th><th>时效(h)</th><th>月600吨成本</th></tr>
+            <tr><td>公路冷链</td><td>7,200元</td><td>992kg</td><td>24–36</td><td>21.6万</td></tr>
+            <tr><td class="hl">铁路冷链集装箱</td><td class="hl">3,200元</td><td class="hl">176kg</td><td>班列24–48/高铁12–24</td><td class="hl">9.6万</td></tr>
+            <tr><td>航空冷链</td><td>32,000元</td><td>8,800kg</td><td>6–12</td><td>96万</td></tr>
+          </table>
+          <div class="note mt-3">铁路vs公路：<b>成本省55.6%、碳排降82.3%</b>；航空vs铁路：<b>成本高10倍、碳排高50倍</b>。7天质保窗口下，铁路兼顾成本、绿色与时效。</div>
+        </div>
+      </div>
+
+      <!-- 模型二 -->
+      <div class="glass mb-4 fade-up">
+        <h3 class="text-base font-semibold text-amber mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-amber rotate-45"></span>模型二｜EOQ经济订货量+重心法选址<span class="flag">库存优化</span></h3>
+        <div class="p-5 rounded-xl bg-accent/5 border border-accent/15">
+          <div class="text-sm font-bold text-accent-light mb-2">EOQ 计算</div>
+          <div class="mut mb-3">EOQ=√(2DS/H)，D=3600吨/年，S=500元/次，H=4800元/吨·年</div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div class="res"><b class="text-accent-light">27.4吨</b><span class="text-[11px] text-text-secondary/60">EOQ</span></div>
+            <div class="res"><b class="text-accent-light">131次/年</b><span class="text-[11px] text-text-secondary/60">补货频次（≈每2.8天）</span></div>
+            <div class="res"><b class="text-accent-light">13.7吨</b><span class="text-[11px] text-text-secondary/60">平均库存</span></div>
+            <div class="res"><b class="text-green-400">≈平衡</b><span class="text-[11px] text-text-secondary/60">年订货≈持有=6.57万</span></div>
+          </div>
+          <div class="text-sm font-bold text-accent-light mb-2 mt-4">重心法选址（需求点加权）</div>
+          <div class="mut">A(2,8,w500) B(10,3,w300) C(6,12,w200)→收敛最优DC≈(3.20,10.08)</div>
+        </div>
+      </div>
+
+      <!-- 模型三 -->
+      <div class="glass mb-4 fade-up">
+        <h3 class="text-base font-semibold text-amber mb-3 flex items-center gap-2"><span class="w-2 h-2 rounded-sm bg-amber rotate-45"></span>模型三｜单城财务敏感性<span class="flag">利润测算</span></h3>
+        <div class="p-5 rounded-xl bg-accent/5 border border-accent/15">
+          <div class="mut mb-4">基准：年销量1000吨、均价28000元/吨、单位不含损耗成本17000元/吨、损耗率3%</div>
+          <table>
+            <tr><th>损耗率</th><th>单位毛利</th><th>毛利率</th><th>年毛利</th></tr>
+            <tr><td>3%</td><td>10,160</td><td class="hl">36.3%</td><td class="hl">1,016万</td></tr>
+            <tr><td>8%</td><td>8,760</td><td>31.3%</td><td>876万</td></tr>
+            <tr><td>15%</td><td>6,800</td><td>24.3%</td><td>680万</td></tr>
+          </table>
+          <div class="text-sm font-bold text-accent-light mt-4 mb-2">销量×均价 九宫格（年毛利/利润率）</div>
+          <table>
+            <tr><th>销量＼均价</th><th>×0.9</th><th>×1.0</th><th>×1.1</th></tr>
+            <tr><td>×0.8</td><td>589万(29%)</td><td>813万(36%)</td><td>1,037万(42%)</td></tr>
+            <tr><td>×1.0</td><td>736万(29%)</td><td class="hl">1,016万(36%)</td><td>1,296万(42%)</td></tr>
+            <tr><td>×1.2</td><td>883万(29%)</td><td>1,219万(36%)</td><td>1,555万(42%)</td></tr>
+          </table>
+          <div class="note mt-3">利润率对均价高度敏感（±10%均价→29%↔42%）；损耗率是利润"隐形杀手"。控损+适度溢价是单城盈利关键。</div>
+        </div>
+      </div>
+
+      <div class="note" style="background:rgba(99,102,241,0.06);border-left-color:#6366f1;color:#a5b4fc">
+        ⚠️ 本附录为<b>示范性测算</b>：参数基于公开运价、行业排放因子与典型基准假设的合理取值，<b>非企业实际经营数据</b>。正式立项请以真实运价、产能、销量与成本结构标定后重算。
+      </div>
+    </section>
+
+    <!-- ── Footer ── -->
+    <div class="glass text-center fade-up" style="background:rgba(99,102,241,0.04)">
+      <h3 class="text-base font-semibold text-accent-light mb-2">框架使用说明</h3>
+      <p class="text-sm text-text-secondary/60 leading-relaxed">「7天鲜啤」全案策划<b class="text-amber">建模实证版v3（青岛啤酒切入）</b>，覆盖背景—标杆切入—产品—品牌—供应链—渠道—营销—财务—风险—执行—建模实证十一大模块，已用真实行业数据与三个量化模型支撑核心论点。</p>
+    </div>
+
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer class="text-center text-text-secondary/40 text-xs py-8 border-t border-white/5 bg-accent/[0.02]">
+    「7天鲜啤」全案策划 · 建模实证版 v3（青岛啤酒切入）<br>
+    编制视角：中国物流与采购联合会 · 酒类与水饮供应链分会 × 交通/铁路物流工程
+    <div class="mt-3 text-[11px]">数据来源：人民日报（2026-02-13）；蜜雪冰城控股福鹿家及行业报道（2025–2026）；中国酒业协会/公开行业研究。建模参数为公开基准假设下的示范性测算。</div>
+  </footer>
+
+</div>
+
+<!-- ── Fluid Canvas Animation ── -->
+<script>
+(function() {
+  const canvas = document.getElementById('fluid-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles = [];
+  const PARTICLE_COUNT = 80;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() {
+      this.reset();
+      this.y = Math.random() * h;
+    }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = -20;
+      this.size = Math.random() * 2 + 0.5;
+      this.speed = Math.random() * 0.4 + 0.15;
+      this.opacity = Math.random() * 0.5 + 0.15;
+      this.wave = Math.random() * 0.02;
+      this.phase = Math.random() * Math.PI * 2;
+    }
+    update() {
+      this.y += this.speed;
+      this.x += Math.sin(this.y * this.wave + this.phase) * 0.3;
+      if (this.y > h + 20) { this.y = -20; this.x = Math.random() * w; }
+    }
+    draw() {
+      ctx.fillStyle = `rgba(99,102,241,${this.opacity})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// ── Intersection Observer for fade-up animations ──
+(function() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { rootMargin: '-60px 0px', threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up, .fade-in').forEach(el => observer.observe(el));
+
+  // Init hero
+  setTimeout(() => document.getElementById('hero-content')?.classList.add('visible'), 100);
+
+  // ── Nav Active Observer ──
+  const navLinks = [...document.querySelectorAll('nav a')];
+  const secs = navLinks.map(a => document.querySelector(a.getAttribute('href')));
+  const navObs = new IntersectionObserver((es) => {
+    es.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  secs.forEach(s => s && navObs.observe(s));
+})();
+</script>
+
+</body>
+</html>
